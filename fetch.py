@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Constants
 BASE_URL = "https://travel.state.gov/content/travel/en/legal/visa-law0/visa-bulletin"
-SAVE_DIR = "/Users/prakalps/repos/visa/bulletins"
+SAVE_DIR = "/Users/prakalps/repos/visa/.bulletins"
 MONTHS = ["january", "february", "march", "april", "may", "june", 
           "july", "august", "september", "october", "november", "december"]
 
