@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
+import webbrowser
 import matplotlib.pyplot as plt
 
 # Constants
@@ -128,7 +129,7 @@ def extract_eb1_final_action_and_filing_dates_from_all_bulletins(past_years):
 
 # Visualization
 def plot_eb1_dates(eb1_dates):
-    """Plot the extracted dates with enhanced styling."""
+    """Plot the extracted dates with enhanced styling and clickable points."""
     # Prepare data
     bulletin_dates = list(eb1_dates.keys())
     final_action_dates = [eb1_dates[date]["final_action_date"] for date in bulletin_dates]
@@ -139,16 +140,16 @@ def plot_eb1_dates(eb1_dates):
     filtered_bulletin_dates, filtered_final_action_dates, filtered_filing_dates = zip(*filtered_data)
 
     # Set style
-    plt.style.use('seaborn-v0_8')  # or use 'ggplot' if seaborn is not installed
+    plt.style.use('seaborn-v0_8')
     fig, ax = plt.subplots(figsize=(12, 7))
 
     # Plot lines with enhanced styling
-    ax.plot(filtered_bulletin_dates, filtered_filing_dates, 
+    filing_line = ax.plot(filtered_bulletin_dates, filtered_filing_dates, 
             marker='o', linestyle='-', linewidth=2, markersize=6,
-            color='#2ecc71', label='Date of Filing')
-    ax.plot(filtered_bulletin_dates, filtered_final_action_dates, 
+            color='#2ecc71', label='Date of Filing', picker=5)[0]
+    final_action_line = ax.plot(filtered_bulletin_dates, filtered_final_action_dates, 
             marker='s', linestyle='-', linewidth=2, markersize=6,
-            color='#3498db', label='Final Action Date')
+            color='#3498db', label='Final Action Date', picker=5)[0]
     ax.plot(filtered_bulletin_dates, filtered_bulletin_dates, 
             color='#e74c3c', linestyle='--', linewidth=1.5,
             label='Current Date')
@@ -159,22 +160,26 @@ def plot_eb1_dates(eb1_dates):
     ax.set_title('EB1 India: Final Action and Filing Dates Progression', 
                 fontsize=14, fontweight='bold', pad=20)
     
-    # Customize grid
     ax.grid(True, linestyle='--', alpha=0.7)
-    
-    # Customize ticks
     plt.xticks(rotation=45)
     ax.tick_params(axis='both', which='major', labelsize=10)
-    
-    # Enhance legend
     ax.legend(loc='upper left', frameon=True, fancybox=True, 
              shadow=True, fontsize=10)
 
-    # Adjust layout
+    def on_pick(event):
+        line = event.artist
+        ind = event.ind[0]
+        date = filtered_bulletin_dates[ind]
+        fiscal_year = date.year if date.month not in [10, 11, 12] else date.year + 1
+        month = MONTHS[date.month - 1]
+        url = f"{BASE_URL}/{fiscal_year}/visa-bulletin-for-{month}-{date.year}.html"
+        webbrowser.open(url)
+
+    fig.canvas.mpl_connect('pick_event', on_pick)
     plt.tight_layout()
     plt.show()
 
 if __name__ == "__main__":
-    past_years = int(sys.argv[1]) if len(sys.argv) > 1 else 10
+    past_years = int(sys.argv[1]) if len(sys.argv) > 1 else 3
     fetch_and_save_bulletins(past_years)
     extract_eb1_final_action_and_filing_dates_from_all_bulletins(past_years)
