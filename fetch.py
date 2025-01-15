@@ -223,6 +223,7 @@ def plot_eb1_dates(eb1_dates):
 
     # Customize appearance
     ax.set_xlabel("Bulletin Date", fontsize=12, fontweight="bold")
+    ax.axhline(y=datetime(2023, 5, 1).date(), color='#f39c12', linestyle='-.', linewidth=1.5, label='May 2023 Priority Date')
     ax.set_ylabel("Date", fontsize=12, fontweight="bold")
     ax.set_title(
         "EB1 India: Final Action and Filing Dates Progression",
