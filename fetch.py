@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime
 from concurrent.futures import ThreadPoolExecutor
 import webbrowser
+from dateutil.relativedelta import relativedelta
 import matplotlib.pyplot as plt
 
 # Constants
@@ -165,6 +166,13 @@ def extract_eb1_final_action_and_filing_dates_from_all_bulletins(past_years):
 
     plot_eb1_dates(eb1_dates)
 
+def convert_days_to_years_months_days(days):
+    """Convert number of days to years, months, and days."""
+    years = days // 365
+    remaining_days = days % 365
+    months = remaining_days // 30
+    days = remaining_days % 30
+    return years, months, days
 
 # Visualization
 def plot_eb1_dates(eb1_dates):
@@ -221,9 +229,31 @@ def plot_eb1_dates(eb1_dates):
         label="Current Date",
     )
 
+    may_2023_date = datetime(2023, 5, 1).date()
+    last_filing_date = filtered_filing_dates[-1]
+    dy, dm, dd = convert_days_to_years_months_days((may_2023_date - last_filing_date).days)
+
     # Customize appearance
     ax.set_xlabel("Bulletin Date", fontsize=12, fontweight="bold")
-    ax.axhline(y=datetime(2023, 5, 1).date(), color='#f39c12', linestyle='-.', linewidth=1.5, label='May 2023 Priority Date')
+    ax.axhline(y=may_2023_date, color='#f39c12', linestyle='-.', linewidth=1.5, label='May 2023 Priority Date')
+    # Draw a line from the last filing date to the May 2023 priority date
+    ax.plot(
+        [filtered_bulletin_dates[-1], filtered_bulletin_dates[-1]],
+        [last_filing_date, may_2023_date],
+        color="#f39c12",
+        linestyle=":",
+        linewidth=1.5,
+    )
+    ax.text(
+        x=filtered_bulletin_dates[-1],
+        y=last_filing_date + (may_2023_date - last_filing_date) / 2,
+        s=f"{dy} years, {dm} months, {dd} days",
+        verticalalignment="center",
+        horizontalalignment="left",
+        color="#f39c12",
+        fontsize=10,
+        bbox=dict(facecolor="white", alpha=0.5),
+    )
     ax.set_ylabel("Date", fontsize=12, fontweight="bold")
     ax.set_title(
         "EB1 India: Final Action and Filing Dates Progression",
